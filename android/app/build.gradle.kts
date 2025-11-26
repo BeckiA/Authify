@@ -42,3 +42,25 @@ android {
 flutter {
     source = "../.."
 }
+
+// Task to print SHA-1 and SHA-256 keys
+tasks.register("printShaKeys") {
+    doLast {
+        val keystoreFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+        if (keystoreFile.exists()) {
+            exec {
+                commandLine(
+                    "keytool",
+                    "-list",
+                    "-v",
+                    "-keystore", keystoreFile.absolutePath,
+                    "-alias", "androiddebugkey",
+                    "-storepass", "android",
+                    "-keypass", "android"
+                )
+            }
+        } else {
+            println("Debug keystore not found at: ${keystoreFile.absolutePath}")
+        }
+    }
+}

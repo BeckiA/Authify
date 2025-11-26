@@ -18,11 +18,6 @@ void main() async {
   // Load environment variables
   await dotenv.load(fileName: ".env");
 
-  // Test network connectivity
-  // print('🔍 Testing network connectivity...');
-  // await checkInternetConnectivity();
-  // await checkSupabaseConnectivity();
-
   try {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
     print('✅ Supabase initialized successfully');
@@ -69,7 +64,7 @@ Future<void> _processAuthLink(String link) async {
 
     // Handle password reset links (recovery type or null type)
     // Password reset doesn't use PKCE, so we use exchangeCodeForSession
-    if (type == 'recovery' || type == 'reset' || type == null) {
+    if (type == 'recovery' || type == 'reset') {
       try {
         // For password reset, use exchangeCodeForSession which doesn't require PKCE
         // This processes the code and creates a session
@@ -94,7 +89,9 @@ Future<void> _processAuthLink(String link) async {
         return;
       }
     } else {
-      // Email verification links use PKCE, so use getSessionFromUrl
+      // Handle OAuth callbacks and email verification links (both use PKCE)
+      // OAuth callbacks: type will be null or not 'recovery'/'reset'
+      // Email verification: type will be 'signup' or similar
       try {
         final sessionResponse = await supabase.auth.getSessionFromUrl(
           Uri.parse(link),
@@ -102,30 +99,33 @@ Future<void> _processAuthLink(String link) async {
 
         final user = sessionResponse.session.user;
 
-        // Email verification - check if verified and navigate accordingly
-        if (user.emailConfirmedAt != null) {
+        // For OAuth sign-ins, users are automatically verified
+        // For email verification, check if verified
+        if (user.emailConfirmedAt != null || type == null) {
+          // OAuth sign-in or verified email - navigate to home
           Get.offAllNamed('/home');
           Get.snackbar(
-            'Email Verified',
-            'Your email has been verified successfully!',
+            'Success',
+            'Signed in successfully!',
             snackPosition: SnackPosition.BOTTOM,
             duration: const Duration(seconds: 2),
           );
         } else {
+          // Email not verified yet
           Get.offAllNamed('/verify-email');
         }
       } catch (e) {
         // If getSessionFromUrl fails, it's likely a stale link
-        // Check if user is already verified
+        // Check if user is already signed in
         final currentUser = supabase.auth.currentUser;
-        if (currentUser != null && currentUser.emailConfirmedAt != null) {
-          // User is already verified, navigate to home
+        if (currentUser != null) {
+          // User is already signed in, navigate to home
           Get.offAllNamed('/home');
           return;
         }
 
-        // Stale email verification link, silently ignore
-        print('⚠️ Stale email verification link detected, ignoring: $e');
+        // Stale link, silently ignore
+        print('⚠️ Stale auth link detected, ignoring: $e');
         return;
       }
     }

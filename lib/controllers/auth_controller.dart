@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../constants/supabase_credentials.dart';
 
 class AuthController extends GetxController {
   final SupabaseClient supabase = Supabase.instance.client;
@@ -484,6 +485,50 @@ class AuthController extends GetxController {
         'An unexpected error occurred: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Signs in with Google OAuth
+  Future<void> signInWithGoogle() async {
+    try {
+      isLoading.value = true;
+
+      await supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: appDeepLink,
+      );
+
+      // Note: The actual authentication happens via deep link callback
+      // This method initiates the OAuth flow which will open a browser
+      // The deep link handler in main.dart will process the callback
+    } on AuthException catch (e) {
+      Get.snackbar('Google Sign-In Error', e.message);
+    } catch (e) {
+      Get.snackbar('Error', 'An unexpected error occurred: ${e.toString()}');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Signs in with Facebook OAuth
+  Future<void> signInWithFacebook() async {
+    try {
+      isLoading.value = true;
+
+      await supabase.auth.signInWithOAuth(
+        OAuthProvider.facebook,
+        redirectTo: appDeepLink,
+      );
+
+      // Note: The actual authentication happens via deep link callback
+      // This method initiates the OAuth flow which will open a browser
+      // The deep link handler in main.dart will process the callback
+    } on AuthException catch (e) {
+      Get.snackbar('Facebook Sign-In Error', e.message);
+    } catch (e) {
+      Get.snackbar('Error', 'An unexpected error occurred: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }

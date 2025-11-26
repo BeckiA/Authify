@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../controllers/auth_controller.dart';
 import '../constants/app_colors.dart';
+import '../widgets/social_sign_in_button.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -238,6 +239,46 @@ class SignupScreen extends StatelessWidget {
                             ),
                           ),
                 ),
+              ),
+              const SizedBox(height: 24),
+              // Divider with "OR"
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: AppColors.border,
+                      thickness: 1,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'OR',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: AppColors.border,
+                      thickness: 1,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Social Sign-In Buttons
+              SocialSignInButton(
+                provider: SocialProvider.google,
+                authController: authController,
+              ),
+              const SizedBox(height: 12),
+              SocialSignInButton(
+                provider: SocialProvider.facebook,
+                authController: authController,
               ),
               const SizedBox(height: 16),
               TextButton(
